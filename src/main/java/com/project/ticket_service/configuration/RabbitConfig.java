@@ -3,6 +3,7 @@ package com.project.ticket_service.configuration;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -16,6 +17,7 @@ public class RabbitConfig {
     public static final String EXCHANGE = "ticket.exchange";
     public static final String QUEUE = "ticket.notification.queue";   
     public static final String ROUTING_KEY = "ticket.event";
+    public static final String DLQ = "ticket.notification.dlq";
 
     @Bean
     public TopicExchange topicExchange() {
@@ -23,13 +25,24 @@ public class RabbitConfig {
     }
     
     @Bean
-    public Queue notificationQueue() {
-        return new Queue(QUEUE, true);
+    public Queue mainQueue() {
+        return QueueBuilder.durable(QUEUE)
+                .deadLetterExchange("")
+                .deadLetterRoutingKey(DLQ)
+                .build();
     }
 
     @Bean
-    public Binding binding(Queue notificationQueue, TopicExchange topicExchange) {
-        return BindingBuilder.bind(notificationQueue()).to(topicExchange()).with(ROUTING_KEY);
+    public Queue deadLetterQueue() {
+        return QueueBuilder.durable(DLQ).build();
+    }
+
+    @Bean
+    public Binding binding() {
+        return BindingBuilder
+                .bind(mainQueue())
+                .to(topicExchange())
+                .with(ROUTING_KEY);
     }
 
      @Bean
