@@ -6,9 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.project.ticket_service.dto.request.CreateTicketRequest;
+import com.project.ticket_service.dto.request.TicketEvent;
 import com.project.ticket_service.dto.response.TicketResponse;
 import com.project.ticket_service.exception.ResourceNotFoundException;
+import com.project.ticket_service.messaging.TicketEventPublisher;
 import com.project.ticket_service.model.entity.Ticket;
+import com.project.ticket_service.model.enums.TicketEventType;
 import com.project.ticket_service.model.enums.TicketStatus;
 import com.project.ticket_service.repository.TicketRepository;
 import com.project.ticket_service.service.TicketAuditService;
@@ -24,6 +27,9 @@ public class TicketServiceImpl implements TicketService {
     @Autowired
     private TicketAuditService ticketAuditService;
 
+    @Autowired
+    private TicketEventPublisher ticketEventPublisher;
+
     @Override
     public TicketResponse createTicket(CreateTicketRequest request) {
         
@@ -34,6 +40,8 @@ public class TicketServiceImpl implements TicketService {
         ticket.setCreatedBy(request.getCreatedBy());
 
         Ticket savedTicket = ticketRepository.save(ticket);
+
+        publishTicketEvent(savedTicket, TicketEventType.CREATED, request.getCreatedBy());
 
         return ticketResponse(savedTicket);
     }
@@ -65,6 +73,8 @@ public class TicketServiceImpl implements TicketService {
 
         ticketAuditService.auditStatusChange(ticketId, oldStatus, TicketStatus.ASSIGNED, agent);
 
+        publishTicketEvent(updatedTicket, TicketEventType.ASSIGNED, agent);
+
         return ticketResponse(updatedTicket);
 
     }
@@ -84,6 +94,9 @@ public class TicketServiceImpl implements TicketService {
         Ticket updatedTicket = ticketRepository.save(ticket);
 
         ticketAuditService.auditStatusChange(ticketId, currentStatus, newStatus, updatedBy);
+
+        publishTicketEvent(updatedTicket, TicketEventType.STATUS_CHANGED, updatedBy);
+
         return ticketResponse(updatedTicket);
     }
 
@@ -99,6 +112,17 @@ public class TicketServiceImpl implements TicketService {
                 .assignedTo(ticket.getAssignedTo())
                 .createdAt(ticket.getCreatedAt())
                 .build();
+    }
+
+    private void publishTicketEvent(Ticket ticket, TicketEventType eventType, String actor) {
+        ticketEventPublisher.publishEvent(
+            TicketEvent.builder()
+                .ticketId(ticket.getId())
+                .status(ticket.getTicketStatus())
+                .eventType(eventType)
+                .actor(actor)
+                .build()
+        );
     }
 
 }

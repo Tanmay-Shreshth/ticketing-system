@@ -45,7 +45,7 @@ public class TicketController {
         return ticketService.assignTicket(ticketId, agent);
     }
 
-    @PutMapping("/{ticketId}/status")
+    @PutMapping("/{ticketId}/updateStatus")
     public TicketResponse updateTicketStatus(@PathVariable UUID ticketId,  @RequestBody @Valid UpdateTicketStatusRequest request) {
         return ticketService.updateTicketStatus(ticketId, request.getNewStatus(), request.getUpdatedBy());
     }
