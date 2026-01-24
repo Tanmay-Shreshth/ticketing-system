@@ -2,7 +2,6 @@ package com.project.ticket_service.service.impl;
 
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.project.ticket_service.dto.request.CreateTicketRequest;
@@ -18,17 +17,17 @@ import com.project.ticket_service.service.TicketAuditService;
 import com.project.ticket_service.service.TicketService;
 import com.project.ticket_service.util.TicketStatusTransitionValidator;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class TicketServiceImpl implements TicketService {
 
-    @Autowired
-    private TicketRepository ticketRepository;
+    private final TicketRepository ticketRepository;
 
-    @Autowired
-    private TicketAuditService ticketAuditService;
+    private final TicketAuditService ticketAuditService;
 
-    @Autowired
-    private TicketEventPublisher ticketEventPublisher;
+    private final TicketEventPublisher ticketEventPublisher;
 
     @Override
     public TicketResponse createTicket(CreateTicketRequest request) {
