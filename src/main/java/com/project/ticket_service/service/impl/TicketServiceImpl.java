@@ -2,8 +2,8 @@ package com.project.ticket_service.service.impl;
 
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.project.ticket_service.dto.request.CreateTicketRequest;
 import com.project.ticket_service.dto.request.TicketEvent;
@@ -18,17 +18,17 @@ import com.project.ticket_service.service.TicketAuditService;
 import com.project.ticket_service.service.TicketService;
 import com.project.ticket_service.util.TicketStatusTransitionValidator;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class TicketServiceImpl implements TicketService {
 
-    @Autowired
-    private TicketRepository ticketRepository;
+    private final TicketRepository ticketRepository;
 
-    @Autowired
-    private TicketAuditService ticketAuditService;
+    private final TicketAuditService ticketAuditService;
 
-    @Autowired
-    private TicketEventPublisher ticketEventPublisher;
+    private final TicketEventPublisher ticketEventPublisher;
 
     @Override
     public TicketResponse createTicket(CreateTicketRequest request) {
@@ -55,6 +55,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
+    @Transactional
     public TicketResponse assignTicket(UUID ticketId, String agent) {
 
         Ticket ticket = ticketRepository.findById(ticketId)
@@ -80,6 +81,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
+    @Transactional
     public TicketResponse updateTicketStatus(UUID ticketId, TicketStatus newStatus, String updatedBy) {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
