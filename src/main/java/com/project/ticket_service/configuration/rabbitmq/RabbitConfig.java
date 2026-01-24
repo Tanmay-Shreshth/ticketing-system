@@ -1,4 +1,4 @@
-package com.project.ticket_service.configuration;
+package com.project.ticket_service.configuration.rabbitmq;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;

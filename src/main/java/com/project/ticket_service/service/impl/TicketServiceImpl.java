@@ -3,6 +3,7 @@ package com.project.ticket_service.service.impl;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.project.ticket_service.dto.request.CreateTicketRequest;
 import com.project.ticket_service.dto.request.TicketEvent;
@@ -54,6 +55,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
+    @Transactional
     public TicketResponse assignTicket(UUID ticketId, String agent) {
 
         Ticket ticket = ticketRepository.findById(ticketId)
@@ -79,6 +81,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
+    @Transactional
     public TicketResponse updateTicketStatus(UUID ticketId, TicketStatus newStatus, String updatedBy) {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
